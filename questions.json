@@ -1,0 +1,42 @@
+[
+    {
+        "question": "Is HTML a programming language?",
+        "answer": false
+    },
+    {
+        "question": "Does CSS stand for Cascading Style Sheets?",
+        "answer": true
+    },
+    {
+        "question": "Is JavaScript a statically-typed language?",
+        "answer": false
+    },
+    {
+        "question": "Does 'npm' stand for Node Package Manager?",
+        "answer": true
+    },
+    {
+        "question": "Is 'git' a centralized version control system?",
+        "answer": false
+    },
+    {
+        "question": "Is '===' in JavaScript used for strict equality comparison?",
+        "answer": true
+    },
+    {
+        "question": "Can you use 'let' to declare variables that are block-scoped in JavaScript?",
+        "answer": true
+    },
+    {
+        "question": "Is React a JavaScript framework?",
+        "answer": false
+    },
+    {
+        "question": "Does 'API' stand for Application Programming Interface?",
+        "answer": true
+    },
+    {
+        "question": "Is Python primarily used for front-end web development?",
+        "answer": false
+    }
+]
