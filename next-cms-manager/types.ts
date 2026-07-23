@@ -11,7 +11,7 @@ export interface PostType {
   id: string; // UUID
   slug: string;
   name: string;
-  description?: string;
+  description: string | null;
   created_at: string; // ISO Timestamp
   updated_at: string; // ISO Timestamp
 }
@@ -19,10 +19,10 @@ export interface PostType {
 export interface Category {
   id: string; // UUID
   post_type_id: string; // UUID references PostType
-  parent_id?: string | null; // UUID references parent Category
+  parent_id: string | null; // UUID references parent Category
   slug: string;
   name: string;
-  description?: string;
+  description: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,14 +32,14 @@ export interface Post {
   post_type_id: string; // UUID references PostType
   title: string;
   slug: string;
-  desc?: string; // Short summary
-  content?: string; // Rich body, markdown or editor JSON
+  desc: string | null; // Short summary
+  content: string | null; // Rich body, markdown or editor JSON
   status: PostStatus;
-  featured_image?: string;
-  gallery_images: string[];
-  featured_youtube?: string;
-  metadata: Record<string, any>; // JSONB for custom keys/SEO
-  published_at?: string | null;
+  featured_image: string | null;
+  gallery_images: string[] | null;
+  featured_youtube: string | null;
+  metadata: Record<string, any> | null; // JSONB for custom keys/SEO
+  published_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -47,6 +47,7 @@ export interface Post {
 export interface PostCategory {
   post_id: string;
   category_id: string;
+  post_type_id: string;
 }
 
 export interface PostMedia {
@@ -54,10 +55,10 @@ export interface PostMedia {
   post_id: string; // UUID references Post
   media_type: MediaType;
   url: string;
-  title?: string;
-  alt_text?: string;
-  mime_type?: string;
-  file_size?: number; // In bytes
+  title: string | null;
+  alt_text: string | null;
+  mime_type: string | null;
+  file_size: number | null; // In bytes
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -68,9 +69,9 @@ export interface PostFile {
   post_id: string; // UUID references Post
   url: string;
   title: string;
-  description?: string;
-  mime_type?: string;
-  file_size?: number; // In bytes
+  description: string | null;
+  mime_type: string | null;
+  file_size: number | null; // In bytes
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -81,7 +82,7 @@ export interface PostLink {
   post_id: string; // UUID references Post
   url: string;
   title: string;
-  description?: string;
+  description: string | null;
   target: LinkTarget;
   sort_order: number;
   created_at: string;
@@ -92,13 +93,43 @@ export interface PostLink {
 export interface HydratedPost extends Post {
   post_type_name: string;
   post_type_slug: string;
-  categories: Array<Pick<Category, 'id' | 'name' | 'slug' | 'parent_id'>>;
-  media: Array<Pick<PostMedia, 'id' | 'media_type' | 'url' | 'title' | 'alt_text' | 'mime_type' | 'file_size'>>;
-  files: Array<Pick<PostFile, 'id' | 'url' | 'title' | 'description' | 'mime_type' | 'file_size'>>;
-  links: Array<Pick<PostLink, 'id' | 'url' | 'title' | 'description' | 'target'>>;
+  categories: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    parent_id: string | null;
+  }>;
+  media: Array<{
+    id: string;
+    media_type: MediaType;
+    url: string;
+    title: string | null;
+    alt_text: string | null;
+    mime_type: string | null;
+    file_size: number | null;
+  }>;
+  files: Array<{
+    id: string;
+    url: string;
+    title: string;
+    description: string | null;
+    mime_type: string | null;
+    file_size: number | null;
+  }>;
+  links: Array<{
+    id: string;
+    url: string;
+    title: string;
+    description: string | null;
+    target: LinkTarget;
+  }>;
 }
 
 // Hydrated summary type ideal for feed listings / indexes
 export interface PostListItem extends Pick<Post, 'id' | 'title' | 'slug' | 'desc' | 'status' | 'featured_image' | 'published_at' | 'created_at'> {
-  categories: Array<Pick<Category, 'id' | 'name' | 'slug'>>;
+  categories: Array<{
+    id: string;
+    name: string;
+    slug: string;
+  }>;
 }

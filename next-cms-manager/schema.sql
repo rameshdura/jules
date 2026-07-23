@@ -31,12 +31,18 @@ CREATE TABLE IF NOT EXISTS post_types (
 CREATE TABLE IF NOT EXISTS categories (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     post_type_id UUID NOT NULL REFERENCES post_types(id) ON DELETE CASCADE,
-    parent_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+    parent_id UUID,
     slug VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Enforce that (id, post_type_id) is unique to allow composite foreign key reference
+    CONSTRAINT unique_category_id_and_type UNIQUE (id, post_type_id),
+    -- Strictly enforce that the parent category must belong to the exact same post type
+    CONSTRAINT fk_category_parent FOREIGN KEY (parent_id, post_type_id) REFERENCES categories(id, post_type_id) ON DELETE SET NULL,
+    -- Prevent simple self-referencing cycle
+    CONSTRAINT chk_category_parent_not_self CHECK (parent_id <> id),
     CONSTRAINT unique_category_slug_per_post_type UNIQUE (post_type_id, slug)
 );
 
@@ -57,15 +63,22 @@ CREATE TABLE IF NOT EXISTS posts (
     published_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Enforce that (id, post_type_id) is unique to allow composite foreign key reference in junction table
+    CONSTRAINT unique_post_id_and_type UNIQUE (id, post_type_id),
     CONSTRAINT unique_post_slug_per_post_type UNIQUE (post_type_id, slug)
 );
 
 -- 4. POST CATEGORIES JUNCTION TABLE
--- Many-to-many relationship between posts and categories
+-- Many-to-many relationship between posts and categories.
+-- Enforces that a post can only be linked to categories of the exact same post type!
 CREATE TABLE IF NOT EXISTS post_categories (
-    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    category_id UUID NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
-    PRIMARY KEY (post_id, category_id)
+    post_id UUID NOT NULL,
+    category_id UUID NOT NULL,
+    post_type_id UUID NOT NULL,
+    PRIMARY KEY (post_id, category_id),
+    -- Ensure both refer to the same post_type_id via composite FKs
+    CONSTRAINT fk_post_categories_post FOREIGN KEY (post_id, post_type_id) REFERENCES posts(id, post_type_id) ON DELETE CASCADE,
+    CONSTRAINT fk_post_categories_category FOREIGN KEY (category_id, post_type_id) REFERENCES categories(id, post_type_id) ON DELETE CASCADE
 );
 
 -- 5. POST MEDIA TABLE
@@ -114,14 +127,25 @@ CREATE TABLE IF NOT EXISTS post_links (
 );
 
 -- ==========================================
--- Triggers for 'updated_at' auto-update
+-- Idempotent Triggers for 'updated_at' auto-update
 -- ==========================================
 
+DROP TRIGGER IF EXISTS update_post_types_modtime ON post_types;
 CREATE TRIGGER update_post_types_modtime BEFORE UPDATE ON post_types FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+DROP TRIGGER IF EXISTS update_categories_modtime ON categories;
 CREATE TRIGGER update_categories_modtime BEFORE UPDATE ON categories FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+DROP TRIGGER IF EXISTS update_posts_modtime ON posts;
 CREATE TRIGGER update_posts_modtime BEFORE UPDATE ON posts FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+DROP TRIGGER IF EXISTS update_post_media_modtime ON post_media;
 CREATE TRIGGER update_post_media_modtime BEFORE UPDATE ON post_media FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+DROP TRIGGER IF EXISTS update_post_files_modtime ON post_files;
 CREATE TRIGGER update_post_files_modtime BEFORE UPDATE ON post_files FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+DROP TRIGGER IF EXISTS update_post_links_modtime ON post_links;
 CREATE TRIGGER update_post_links_modtime BEFORE UPDATE ON post_links FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
 -- ==========================================

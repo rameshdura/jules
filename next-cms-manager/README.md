@@ -1,6 +1,6 @@
 # High-Performance Modular CMS Manager
 
-A perfect, highly modular, and highly performant CMS database structure and type definition system. Ideal for modern frameworks like Next.js (App Router / Server Actions), Nuxt, Remix, Node.js, and any PostgreSQL backed backend.
+A perfect, highly modular, and highly performant CMS database structure and type definition system. Ideal for modern frameworks like Next.js (App Router / Server Actions), Nuxt, Remix, Node.js, and any PostgreSQL-backed backend.
 
 This schema lets you build versatile web pages, blog posts, portfolios, or news articles with rich multimedia assets, downloadable files, external references, and customizable category hierarchies.
 
@@ -10,7 +10,7 @@ This schema lets you build versatile web pages, blog posts, portfolios, or news 
 
 - **Multi-Post Types**: Build any content architecture (Blogs, Events, Portfolio, Pages, Products) using the `post_types` table.
 - **Hierarchical Categories**: Parent-child relationship with unique constraints ensures a robust taxonomy.
-- **Rich Media Support**: Native fields for featured image, gallery images array (`text[]`), and youtube embedding (`featured_youtube`), plus a dedicated `post_media` table for discrete image, audio, or video resources.
+- **Rich Media Support**: Native fields for featured image, gallery images array (`text[]`), and YouTube embedding (`featured_youtube`), plus a dedicated `post_media` table for discrete image, audio, or video resources.
 - **Unified Document System**: The `post_files` table manages downloads such as PDFs, Zip archives, and Excel sheets.
 - **Actionable External Links**: Create annotated links with flexible targets using the `post_links` table.
 - **Optimal JSON Aggregation**: Highly optimized SQL queries pull a complete post with *all* its relations in a single, high-performance database query.
@@ -63,7 +63,7 @@ export async function getPostDetail(slug: string, typeSlug: string): Promise<Hyd
 
 ## 🧩 Relational Diagram View
 
-```
+```text
   ┌────────────────┐
   │   post_types   │
   └───────┬────────┘
@@ -84,7 +84,7 @@ export async function getPostDetail(slug: string, typeSlug: string): Promise<Hyd
   ┌───────────────┐        ┌───────────────┐       ┌───────────────┐
   │  post_media   │        │  post_files   │       │  post_links   │
   │ (images,      │        │ (downloads,   │       │ (URLs, target,│
-  │  vids, audio) │        │  PDFs, Zips)  │       │  anchors)     │
+  │  vids, audio) │        │  PDFs, Zips)  │       │  accessibility)     │
   └───────────────┘        └───────────────┘       └───────────────┘
 ```
 
@@ -100,5 +100,5 @@ Rather than creating rigid tables for every custom use case, the `metadata` colu
 
 ### Why separate `post_media`, `post_files`, and `post_links`?
 - **Separation of Concerns**: Users browse media files differently than standard document links.
-- **Type-Safety and Metadata**: Files require `mime_type` and `file_size` for rendering badges. Media requires `alt_text` for accessibity. Links require custom targets (like `_blank` vs `_self`).
+- **Type-Safety and Metadata**: Files require `mime_type` and `file_size` for rendering badges. Media requires `alt_text` for accessibility. Links require custom targets (like `_blank` vs `_self`).
 - **Ordering**: Each relation table contains a `sort_order` field so content managers can order them exactly as needed.
